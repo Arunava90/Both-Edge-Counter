@@ -1,0 +1,36 @@
+module both_edge_counter 
+    #(parameter COUNT_DATA_WIDTH=5) 
+    (
+        input i_clk,
+        input i_rst,
+        input i_en,
+        output [COUNT_DATA_WIDTH-1:0] o_count
+    );
+    
+    reg [COUNT_DATA_WIDTH-2:0] r_counter1, r_counter2;
+    wire [COUNT_DATA_WIDTH-1:0] w_count;
+    
+    // Counter1 with +ve edge clock    
+    always@(posedge i_clk or negedge i_rst) begin
+        if(~i_rst) 
+            r_counter1 <= 'b0;
+        else if (i_en)
+            r_counter1 <= r_counter1 + 1'b1;
+        else
+            r_counter1 <= r_counter1;
+    end  
+
+    // Counter2 with -ve edge clock
+    always@(negedge i_clk or negedge i_rst) begin
+        if(~i_rst) 
+            r_counter2 <= 'b0;
+        else if (i_en)
+            r_counter2 <= r_counter2 + 1'b1;
+        else
+            r_counter2 <= r_counter2;
+    end    
+    
+    assign w_count = r_counter1 + r_counter2;
+    assign o_count = (r_counter1 == (((2**(COUNT_DATA_WIDTH-1)-1)) && (r_counter2 == 'b0)) || ((r_counter2 == (2**(COUNT_DATA_WIDTH-1)-1)) && (r_counter1 == 'b0))) ? (2**COUNT_DATA_WIDTH-1) : w_count;
+    
+endmodule
